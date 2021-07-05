@@ -1,29 +1,10 @@
-// const myList = document.querySelector('ul');
-// const myRequest = new Request('products.json');
-
-// const render = fetch('https://jsonplaceholder.typicode.com/posts')
-// .then(response=>response.json()).then(data=>{
-
-//     const array = data.map((index,value)=>{
-//         let listItem = document.createElement('li');
-//         listItem.appendChild(document.createElement('p')).textContent = index.id;
-//         listItem.appendChild(document.createElement('p')).textContent = index.userId;
-//         listItem.append(index.title);
-//         listItem.appendChild(document.createElement('p')).textContent =index.body;
-//         listItem.appendChild(document.createElement('button')).textContent= "chi tiet"
-//         listItem.appendChild(document.createElement('button')).textContent= "xoa"
-//     })
-//         myList.appendChild(listItem);
-// })
-
-// let listBlock = document.querySelector('#list');
-
 let testAPI = 'https://jsonplaceholder.typicode.com/posts';
 
 
 function start() {
     getTest(rederTest);
     handCreateForm();
+    selectResponse()
 }
 
 start();
@@ -47,8 +28,8 @@ function rederTest(test) {
                 <p>${test.userId}</p> 
                 <p>${test.id}</p>
                 <button onclick="deleteTest(${test.id})">Xoa<button>
-            </li>
-        `
+                <button onclick="handEditForm(${test.id})">Sua<button>
+            </li>`;
     });
 
     listBlock.innerHTML = htmls.join();
@@ -56,6 +37,7 @@ function rederTest(test) {
 
 function handCreateForm() {
 
+    document.querySelector('#edit').style.display = "none";
     let createBtn = document.querySelector('#create');
 
     createBtn.onclick = function () {
@@ -113,3 +95,72 @@ function deleteTest(id) {
 
 }
 
+function editTest(data, callback) {
+
+    options = {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    };
+
+    fetch(testAPI + '/' + data.id, options)
+        .then(function (response) {
+            response.json();
+        })
+        .then(callback)
+        .catch(error => console.log('Error:', error));
+
+}
+
+
+function handEditForm(id) {
+
+    fetch(testAPI + '/' + id)
+        .then((response) => response.json())
+        .then(function (json) {
+            document.querySelector('input[name="title"]').value = json.title;
+            document.querySelector('input[name="body"]').value = json.body;
+            document.querySelector('input[name="userId"]').value = json.userId;
+            document.querySelector('#create').style.display = "none";
+            document.querySelector('#edit').style.display = "block";
+
+        });
+
+    let editBtn = document.querySelector('#edit');
+
+    editBtn.onclick = function () {
+        let title = document.querySelector('input[name="title"]').value;
+        let body = document.querySelector('input[name="body"]').value;
+        let userId = document.querySelector('input[name="userId"]').value;
+
+        let formData = {
+            id: id,
+            title: title,
+            body: body,
+            userId: userId,
+        };
+        editTest(formData, function () {
+            getTest(rederTest);
+        });
+    };
+}
+
+function selectResponse() {
+
+    let selectResponsex = document.querySelector('#select-response');
+
+    selectResponsex.onchange = function () {
+        if (document.querySelector('#select-response').value == "json") {
+            fetch(testAPI)
+            .then((response) => response.json())
+            .then((json) => console.log(json));
+        }
+        if (document.querySelector('#select-response').value == "text") {
+            fetch(testAPI)
+            .then((response) => response.text())
+            .then((text) => console.log(text));
+        }
+    };
+}
